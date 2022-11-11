@@ -700,3 +700,42 @@ void pop_dary_heap(It begin, It end)
 {
     return pop_dary_heap<D>(begin, end, std::less<>{});
 }
+
+template<int D, typename It, typename Compare>
+void replace_dary_heap(It begin, It end, Compare && compare)
+{
+    uint64_t length = end - begin;
+    typename std::iterator_traits<It>::value_type value = std::move(begin[0]);
+    uint64_t index = 0;
+    for (;;)
+    {
+        uint64_t last_child = dary_heap_helpers::last_child_index<D>(index);
+        uint64_t first_child = last_child - (D - 1);
+        if (last_child < length)
+        {
+            It largest_child = dary_heap_helpers::largest_child<D>(begin + first_child, compare);
+            if (!compare(value, *largest_child))
+                break;
+            begin[index] = std::move(*largest_child);
+            index = largest_child - begin;
+        }
+        else if (first_child < length)
+        {
+            It largest_child = dary_heap_helpers::largest_child<D>(begin + first_child, length - first_child, compare);
+            if (compare(value, *largest_child))
+            {
+                begin[index] = std::move(*largest_child);
+                index = largest_child - begin;
+            }
+            break;
+        }
+        else
+            break;
+    }
+    begin[index] = std::move(value);
+}
+template<int D, typename It>
+void replace_dary_heap(It begin, It end)
+{
+    return replace_dary_heap<D>(begin, end, std::less<>{});
+}
